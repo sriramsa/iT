@@ -6,19 +6,20 @@ iT Image will be a standard RPi distribution + media content + iT packages and c
 
 ### Image Content
 The image will contain the following:
+
 1. Educational Content
-..1. Audio/Video Content
-..2. Source Code Exercises
+  1. Audio/Video Content
+  2. Source Code Exercises
 2. iT Packages
-..1. Admin UI package
-..2. Media downloader
-..3. iT Exercises
-..4. iT SSH
-..5. iT Connect
-..6. Azure Linux CLI
+  1. Admin UI package
+  2. Media downloader
+  3. iT Exercises
+  4. iT SSH
+  5. iT Connect
+  6. Azure Linux CLI
 3. Customizations
-..1. Azure Repo added to pull down packages
-..2. iT admin user
+  1. Azure Repo added to pull down packages
+  2. iT admin user
 
 ### Servicing the image
 Once the image is released, how do we service the content and packages in the kit. 
