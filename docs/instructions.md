@@ -1,9 +1,9 @@
 Raspberry Pi WiFi Access point
 ==============================
 
-Setup Raspberry Pi
+1. Setup Raspberry Pi
 ---------------------
-### Boot your Raspberry Pi
+#### 1. Boot your Raspberry Pi
 Your Raspberry Pi needs.
 1. Display
   - HDMI cable to monitor
@@ -13,35 +13,123 @@ Your Raspberry Pi needs.
   - The micro sd card comes with raspbian Linxu OS pre-installed.
 5. Connect Power and let it boot.
 
-### Connect to the network
-#### Change hostname from raspberrypi. 
+#### 2. Connect to the network
+##### Change hostname from raspberrypi. 
 Your default host name for the RPi is 'raspberrypi'. You need to change this before
 you connect to the network. This is so that your device does not have conflicts with
 other devices in the network. 
 
-
-edit /etc/hostname
-then run
-/etc/init.d/hostname.sh script to make it live.
-or
-reboot
-
-Connect ethernet cable to RPi
+#### Connect ethernet cable to RPi
 Confirm it is on the network.
 
-Update packages installed.
-
-Appendix:
-Raspberry standard user: pi
-password: raspberry
+#### Update packages installed
+Updating will take a while ~40 mins
 
 
-Make your RPi an WiFi Access Point:
------------------------------------
-Setup a DHCP server to dish out IPs to machines connecting to it.
-http://itsacleanmachine.blogspot.com/2013/02/wifi-access-point-with-raspberry-pi.html
+2. Make your RPi an WiFi Access Point
+-------------------------------------
+#### Setup wlan0 networking
+1. Assign a static ip address to your wlan0 interface
+This interface is where your AP will hosted.
+  - Edit /etc/network/interfaces
+  ```
+    auto wlan0
+    iface wlan0 inet static
+        address 192.168.42.1
+        netmask 255.255.255.0
+
+  ```
+  - Get the interface take the new config
+  ```
+  $ sudo ifdown wlan0
+  $ sudo ifup wlan0
+  ```
+2. 
+
+#### 2. Setup hostapd
+hostapd is the package you use to make your wireless.
+1. Install **hostapd** package
+2. Configure hostapd
+  - Create **/etc/hostapd/hostapd.conf** to be as below and update your AP_NAME and PASSWORD.
+  ```
+    interface=wlan0
+    driver=nl80211
+    ssid=**YOUR_AP_NAME**
+    hw_mode=g
+    channel=6
+    macaddr_acl=0
+    auth_algs=1
+    ignore_broadcast_ssid=0
+    wpa=2
+    wpa_passphrase=**YOUR_PASSWORD**
+    wpa_key_mgmt=WPA-PSK
+    wpa_pairwise=TKIP
+    rsn_pairwise=CCMP 
+  ```
+
+3. Start hostapd
+```
+$ hostapd -d /etc/hostapd/hostapd.conf
+```
+
+4. Connect to your AP from your laptop. You should see your AP listed.
+If successfully connected, you should get a valid IP to your machine.
+
+5. If 
 
 Setup WiFi access point:
 update package list
-install hostapd
+
+
+Appendix:
+---------
+#### A. Logging in
+user: pi
+password: raspberry
+
+#### Setting up a DHCP server
+Setup a DHCP server to dish out IPs to machines connecting to it.
+http://itsacleanmachine.blogspot.com/2013/02/wifi-access-point-with-raspberry-pi.html
+
+#### NAT - Letting clients connected to AP connect to internet 
+Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up. First, enable IP forwarding in the kernel: 
+```
+$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+```
+
+To set this up automatically on boot, edit the file /etc/sysctl.conf and add the following line to the bottom of the file:
+
+```
+net.ipv4.ip_forward=1
+```
+
+Second, to enable NAT in the kernel, run the following commands:
+
+```
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+```
+
+Your Pi is now NAT-ing. To make this permanent so you don't have to run the commands after each reboot, run the following command:
+
+```
+$ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+```
+
+Now edit the file /etc/network/interfaces and add the following line to the bottom of the file:
+
+```
+up iptables-restore < /etc/iptables.ipv4.nat
+```
+#### Making your services start at bootup
+```
+$ sudo update-rc.d <service-name> enable
+```
+
+If you want to enable hostapd on startup, edit **/etc/default/hostapd.conf**
+and add below line to indicate which config the daemon should use
+```
+DAEMON_CONF="/etc/hostapd/hostapd.conf"
+```
 
