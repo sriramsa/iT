@@ -28,9 +28,8 @@ Updating will take a while ~40 mins
 
 2. Make your RPi an WiFi Access Point
 -------------------------------------
-#### Setup wlan0 networking
-1. Assign a static ip address to your wlan0 interface
-This interface is where your AP will hosted.
+#### 1. Setup wlan0 networking
+Assign a static ip address to your wlan0 interface. This interface is where your AP will hosted.
   - Edit /etc/network/interfaces
   ```
     auto wlan0
@@ -47,9 +46,13 @@ This interface is where your AP will hosted.
 
 #### 2. Setup hostapd
 hostapd is the package you use to make your wireless.
+
 1. Install **hostapd** package
+
 2. Configure hostapd
+
   - Create **/etc/hostapd/hostapd.conf** to be as below and update your AP_NAME and PASSWORD.
+
   ```
     interface=wlan0
     driver=nl80211
@@ -78,11 +81,11 @@ see if you have to setup a DHCP server
 
 Appendix:
 ---------
-#### A. Logging in
+####A. Logging in
 user: pi
 password: raspberry
 
-#### Setting up a DHCP server
+####B. Setting up a DHCP server
 Setup a DHCP server to dish out IPs to machines connecting to it.
 http://itsacleanmachine.blogspot.com/2013/02/wifi-access-point-with-raspberry-pi.html
 1. Install isc-dhcp-server
@@ -106,7 +109,7 @@ If the service refuses to start, look at the logs to see if there is an error in
 $ sudo journalctl -u isc-dhcp-server
 ```
 
-#### NAT - Letting clients connected to AP connect to internet 
+####C. NAT - Letting clients connected to AP connect to internet 
 Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up. First, enable IP forwarding in the kernel: 
 ```
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
@@ -137,7 +140,7 @@ Now edit the file /etc/network/interfaces and add the following line to the bott
 ```
 up iptables-restore < /etc/iptables.ipv4.nat
 ```
-#### Making your services start at bootup
+####D. Making your services start at bootup
 ```
 $ sudo update-rc.d <service-name> enable
 ```
