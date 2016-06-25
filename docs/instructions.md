@@ -30,7 +30,9 @@ Updating will take a while ~40 mins
 -------------------------------------
 #### 1. Setup wlan0 networking
 Assign a static ip address to your wlan0 interface. This interface is where your AP will hosted.
-  - Edit /etc/network/interfaces
+
+1. Edit /etc/network/interfaces
+
   ```
     auto wlan0
     iface wlan0 inet static
@@ -38,7 +40,9 @@ Assign a static ip address to your wlan0 interface. This interface is where your
         netmask 255.255.255.0
 
   ```
-  - Get the interface take the new config
+
+2. Get the interface take the new config
+
   ```
   $ sudo ifdown wlan0
   $ sudo ifup wlan0
@@ -73,8 +77,10 @@ hostapd is the package you use to make your wireless.
 ```
 $ hostapd -d /etc/hostapd/hostapd.conf
 ```
+You should see your AP listed.
 
-4. Connect to your AP from your laptop. You should see your AP listed.
+4. Connect to your AP from your laptop. 
+
 If successfully connected, you should get a valid IP to your machine. If doesn't connect,
 see if you have to setup a DHCP server
 
@@ -82,13 +88,17 @@ see if you have to setup a DHCP server
 Appendix:
 ---------
 ####A. Logging in
-user: pi
-password: raspberry
+
+username: **pi**
+
+password: **raspberry**
 
 ####B. Setting up a DHCP server
+
 Setup a DHCP server to dish out IPs to machines connecting to it.
-http://itsacleanmachine.blogspot.com/2013/02/wifi-access-point-with-raspberry-pi.html
+
 1. Install isc-dhcp-server
+
 2. Edit /etc/dhcp/dhcpd.conf
 
 ```
@@ -104,7 +114,7 @@ subnet 192.168.0.0 netmask 255.255.255.0 {
 ```
 $ sudo /etc/init.d/isc-dhcp-server restart
 ```
-If the service refuses to start, look at the logs to see if there is an error in config;
+Hint: If the service refuses to start, look at the logs to see if there is an error in config;
 ```
 $ sudo journalctl -u isc-dhcp-server
 ```
