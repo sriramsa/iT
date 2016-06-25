@@ -5,13 +5,13 @@ Raspberry Pi WiFi Access point
 ---------------------
 #### 1. Boot your Raspberry Pi
 Your Raspberry Pi needs.
-1. Display
-  - HDMI cable to monitor
-2. Keyboard/Mouse 
-3. Insert Storage (Micro SD)
-4. Operating system to boot:
-  - The micro sd card comes with raspbian Linxu OS pre-installed.
-5. Connect Power and let it boot.
+
+  - Connect your display. HDMI cable to monitor
+  - Keyboard/Mouse 
+  - Insert Storage (Micro SD)
+  - Operating system to boot:
+    - The micro sd card comes with raspbian Linxu OS pre-installed.
+  - Connect Power and let it boot.
 
 #### 2. Connect to the network
 ##### Change hostname from raspberrypi. 
@@ -19,10 +19,10 @@ Your default host name for the RPi is 'raspberrypi'. You need to change this bef
 you connect to the network. This is so that your device does not have conflicts with
 other devices in the network. 
 
-#### Connect ethernet cable to RPi
+##### Connect ethernet cable to RPi
 Confirm it is on the network.
 
-#### Update packages installed
+##### Update packages installed
 Updating will take a while ~40 mins
 
 
@@ -44,7 +44,6 @@ This interface is where your AP will hosted.
   $ sudo ifdown wlan0
   $ sudo ifup wlan0
   ```
-2. 
 
 #### 2. Setup hostapd
 hostapd is the package you use to make your wireless.
@@ -73,12 +72,8 @@ $ hostapd -d /etc/hostapd/hostapd.conf
 ```
 
 4. Connect to your AP from your laptop. You should see your AP listed.
-If successfully connected, you should get a valid IP to your machine.
-
-5. If 
-
-Setup WiFi access point:
-update package list
+If successfully connected, you should get a valid IP to your machine. If doesn't connect,
+see if you have to setup a DHCP server
 
 
 Appendix:
@@ -90,6 +85,26 @@ password: raspberry
 #### Setting up a DHCP server
 Setup a DHCP server to dish out IPs to machines connecting to it.
 http://itsacleanmachine.blogspot.com/2013/02/wifi-access-point-with-raspberry-pi.html
+1. Install isc-dhcp-server
+2. Edit /etc/dhcp/dhcpd.conf
+
+```
+subnet 192.168.0.0 netmask 255.255.255.0 {
+    range 192.168.42.2 192.168.42.100
+    option domain-name-servers 8.8.4.4;
+    option routers 192.168.42.1;
+    interface wlan0;
+}
+```
+
+3. Start the dhcp server
+```
+$ sudo /etc/init.d/isc-dhcp-server restart
+```
+If the service refuses to start, look at the logs to see if there is an error in config;
+```
+$ sudo journalctl -u isc-dhcp-server
+```
 
 #### NAT - Letting clients connected to AP connect to internet 
 Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up. First, enable IP forwarding in the kernel: 
