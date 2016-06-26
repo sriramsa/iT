@@ -4,26 +4,29 @@ Raspberry Pi WiFi Access point
 1. Setup Raspberry Pi
 ---------------------
 #### 1. Boot your Raspberry Pi
-Your Raspberry Pi needs.
-
-  - Connect your display. HDMI cable to monitor
-  - Keyboard/Mouse 
-  - Insert Storage (Micro SD)
+  - Connect your display using HDMI cable to monitor
+  - Connect Keyboard and Mouse 
+  - Insert Storage (Micro SD) supplied
+  - Insert the WiFi dongle.
   - Operating system to boot:
     - The micro sd card comes with raspbian Linxu OS pre-installed.
   - Connect Power and let it boot.
 
 #### 2. Connect to the network
-##### Change hostname from raspberrypi. 
-Your default host name for the RPi is 'raspberrypi'. You need to change this before
+  1. Change hostname from 'raspberrypi'. 
+Your default host name for the RPi is **'raspberrypi'**. You need to change this before
 you connect to the network. This is so that your device does not have conflicts with
 other devices in the network. 
 
-##### Connect ethernet cable to RPi
+Hint: Look at Linux Command list supplied 
+
+  2. Connect ethernet cable to RPi
+
 Confirm it is on the network.
 
-##### Update packages installed
-Updating will take a while ~40 mins
+  3. Update packages installed
+
+Updating will take a while; ~40 mins. 
 
 
 2. Make your RPi an WiFi Access Point
@@ -31,7 +34,7 @@ Updating will take a while ~40 mins
 #### 1. Setup wlan0 networking
 Assign a static ip address to your wlan0 interface. This interface is where your AP will hosted.
 
-1. Edit /etc/network/interfaces
+1. Open a "Terminal" and edit /etc/network/interfaces
 
   ```
     auto wlan0
@@ -77,13 +80,49 @@ hostapd is the package you use to make your wireless.
 ```
 $ hostapd -d /etc/hostapd/hostapd.conf
 ```
-You should see your AP listed.
 
 4. Connect to your AP from your laptop. 
 
-If successfully connected, you should get a valid IP to your machine. If doesn't connect,
-see if you have to setup a DHCP server
+You should see your AP listed when searching for WiFi Access Points on your laptop. Connect to it.
 
+
+If successfully connected, you should get a valid IP to your machine. If doesn't connect,
+see if you have to setup a DHCP server. Read about it online. Instructions are in Appendix below.
+
+
+3. NAT - Letting clients connected to AP connect to internet 
+------------------------------------------------------------
+Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up.
+  1. First, enable IP forwarding in the kernel: 
+```
+$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+```
+
+To set this up automatically on boot, edit the file /etc/sysctl.conf and add the following line to the bottom of the file:
+
+```
+net.ipv4.ip_forward=1
+```
+
+  2. To enable NAT in the kernel, run the following commands:
+
+```
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+```
+
+  3. Your Pi is now NAT-ing. To make this permanent so you don't have to run the commands after each reboot, run the following command:
+
+```
+$ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+```
+
+Now edit the file /etc/network/interfaces and add the following line to the bottom of the file:
+
+```
+up iptables-restore < /etc/iptables.ipv4.nat
+```
 
 Appendix:
 ---------
@@ -100,6 +139,8 @@ Setup a DHCP server to dish out IPs to machines connecting to it.
 1. Install isc-dhcp-server
 
 2. Edit /etc/dhcp/dhcpd.conf
+
+Add the following entry at the end.
 
 ```
 subnet 192.168.0.0 netmask 255.255.255.0 {
@@ -119,38 +160,7 @@ Hint: If the service refuses to start, look at the logs to see if there is an er
 $ sudo journalctl -u isc-dhcp-server
 ```
 
-####C. NAT - Letting clients connected to AP connect to internet 
-Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up. First, enable IP forwarding in the kernel: 
-```
-$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
-```
-
-To set this up automatically on boot, edit the file /etc/sysctl.conf and add the following line to the bottom of the file:
-
-```
-net.ipv4.ip_forward=1
-```
-
-Second, to enable NAT in the kernel, run the following commands:
-
-```
-sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
-```
-
-Your Pi is now NAT-ing. To make this permanent so you don't have to run the commands after each reboot, run the following command:
-
-```
-$ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
-```
-
-Now edit the file /etc/network/interfaces and add the following line to the bottom of the file:
-
-```
-up iptables-restore < /etc/iptables.ipv4.nat
-```
-####D. Making your services start at bootup
+####C. Making your services start at bootup
 ```
 $ sudo update-rc.d <service-name> enable
 ```
