@@ -23,6 +23,7 @@ Raspberry Pi WiFi Access point
      Updating will take a while; ~40 mins. 
 
 
+
 2. Make your RPi an WiFi Access Point
 -------------------------------------
 #### 1. Setup wlan0 networking
@@ -34,8 +35,8 @@ Assign a static ip address to your wlan0 interface. This interface is where your
     iface wlan0 inet static
         address 192.168.42.1
         netmask 255.255.255.0
-
   ```
+
 
 2. Get the interface take the new config
   ```
@@ -77,22 +78,21 @@ Assign a static ip address to your wlan0 interface. This interface is where your
    If successfully connected, you should get a valid IP to your machine. If doesn't connect, see if you have to setup a DHCP server. Read about it online. Instructions are in Appendix below.   
 
 
+
 3. NAT - Letting clients connected to AP connect to internet 
 ------------------------------------------------------------
 Configure NAT (Network Address Translation). NAT is a technique that allows several devices to use a single connection to the internet. Linux supports NAT using Netfilter (also known as iptables) and is fairly easy to set up.   
+
 1. First, enable IP forwarding in the kernel: 
    ```
    $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
    ```
-
    To set this up automatically on boot, edit the file /etc/sysctl.conf and add the following line to the bottom of the file:   
-
    ```
    net.ipv4.ip_forward=1
    ```
 
 2. To enable NAT in the kernel, run the following commands:   
-
    ```
    sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
    sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
